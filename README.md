@@ -1,79 +1,160 @@
-# 🧩 Frontend Developer Test
+# Frontend Developer Test — Trading Terminal Dashboard
 
-ทดสอบความสามารถในการพัฒนา UI/UX เชิงโครงสร้างและการจัดการ Layout ที่ซับซ้อน  
-โดยใช้ **React + TailwindCSS** และแนวคิด Component-based Architecture  
-
----
-
-## 📝 ภาพรวมของแบบทดสอบ
-
-ผู้สมัครต้องพัฒนา **Dashboard Layout ที่ผู้ใช้สามารถปรับแต่งได้เอง**  
-พร้อมด้วย Chart, Table, และ Utility Function ที่เกี่ยวกับ Date Range
+เป้าหมายคือสร้าง **Trading Dashboard แบบหน้าเทรดจริง (TradingView-like)**  
+การตรวจงานจะทำจาก “หน้าเว็บอย่างเดียว”  
+❌ ไม่ต้องเปิด DevTools  
+❌ ไม่ต้อง deploy
 
 ---
 
-## 🚀 สิ่งที่ต้องทำ
-
-### 1. Dashboard Layout (Drag & Drop + Resize)
-
-สร้างหน้า **Dashboard** ที่มีกล่อง (Panel / Widget) หลายกล่อง  
-และผู้ใช้สามารถ **ย้ายตำแหน่ง** และ **ปรับขนาด** ได้อย่างอิสระ
-
-**คุณสมบัติหลัก:**
-- ✅ Drag & Drop ย้ายตำแหน่งกล่องได้  
-- ✅ Resize ได้ทุกด้าน (บน / ล่าง / ซ้าย / ขวา)  
-- ✅ Layout คล้ายหน้าเทรดของ Binance (ผู้ใช้ปรับได้ตามต้องการ)  
-- ✅ ใช้ **TailwindCSS** จัดการ Layout และ Styling
+## 🔒 Tech Stack & Rules (บังคับ)
+- React (TypeScript แนะนำ)
+- TailwindCSS
+- Chart: TradingView Lightweight Charts (บังคับ)
+- Drag & Drop / Resize: ใช้ library ได้ แต่ต้อง **smooth + stable**
+- Data: Binance Public Market Data (REST + WebSocket)
+- ❌ ห้าม mock ข้อมูลกราฟ
+- ❌ ห้ามใช้ DevTools เพื่ออธิบายการทำงาน (ทุกอย่างต้องดูได้จาก UI)
 
 ---
 
-### 2. Chart Components (React ApexCharts)
+## 🔧 Environment Variables
+ให้ copy ไปใส่ในไฟล์ `.env`
 
-เพิ่ม Chart อย่างน้อย 4 ประเภท โดยใช้ **React ApexCharts**
-
-| Type | Requirement |
-|------|--------------|
-| 🥧 Pie Chart | แสดงสัดส่วนข้อมูล |
-| 📊 Bar Chart | แสดงการเปรียบเทียบข้อมูล |
-| 📈 Line Chart | แสดงข้อมูลตามเวลา |
-| 🧱 Column Chart | แสดงข้อมูลแบบแนวตั้ง |
-
-**แต่ละกราฟต้องมี:**
-- Title ชัดเจน
-- แสดงข้อมูลจริง (mock data ได้)
+```env
+VITE_BINANCE_REST_BASE=https://api.binance.com
+VITE_BINANCE_WS_BASE=wss://stream.binance.com:9443
+VITE_SYMBOL=BTCUSDT
+VITE_LAYOUT_KEY=trading_dashboard_layout_v1
+```
 
 ---
 
-### 3. Table Component
+## 🌐 API ที่ต้องใช้ (กำหนดตายตัว)
 
-สร้าง **Table Component** ที่มีความสามารถดังนี้:
+### REST — Candlestick (Initial load / เปลี่ยน timeframe)
+```
+GET /api/v3/klines?symbol=BTCUSDT&interval=<interval>&limit=500
+```
 
-- 📏 **Resizable Columns** — ผู้ใช้สามารถปรับขนาดคอลัมน์ได้  
-- 🔽 **Expandable Row** — เมื่อคลิกที่ row จะโชว์รายละเอียดเพิ่มเติมของข้อมูลแถวนั้น  
+### WebSocket
+- Realtime Candlestick
+```
+/ws/btcusdt@kline_<interval>
+```
 
-> **Hint:** หากพัฒนา Table เองจะได้รับคะแนนพิเศษ 🎯
+- Realtime Trades
+```
+/ws/btcusdt@trade
+```
+
+> สามารถใช้ combined stream ได้
 
 ---
 
-### 4. Utility Function (Date Range Calculator)
+## ⏱ Timeframe (รูปแบบ TradingView)
 
-สร้างฟังก์ชันที่ชื่อว่า `getDateRange(date: string, type: string): { start: string, end: string }`
+### ต้องมีขั้นต่ำ
+`1m, 5m, 15m, 1h, 4h, 1D`
 
-**รองรับ type ต่อไปนี้:**
+### เพิ่มได้ (เฉพาะลิสต์นี้เท่านั้น)
+- Minutes: `1m, 3m, 5m, 15m, 30m`
+- Hours: `1h, 2h, 4h, 6h, 8h, 12h`
+- Days / Weeks / Months: `1D, 3D, 1W, 1M`
 
-| Type | Description |
-|------|--------------|
-| `lastday` | วันที่ผ่านมา |
-| `last7day` | ย้อนหลัง 7 วัน |
-| `lastweek` | สัปดาห์ก่อนหน้า |
-| `lastmonth` | เดือนก่อนหน้า |
-| `last3month` | 3 เดือนล่าสุด |
-| `last6month` | 6 เดือนล่าสุด |
-| `last12month` | 12 เดือนล่าสุด |
+### Behavior (บังคับ)
+- เปลี่ยน timeframe → refetch REST + reconnect WebSocket
+- มี Quick presets + Dropdown
+- สามารถ ⭐ Favorite timeframe ได้
+- Favorites ต้อง persist (localStorage)
 
-**Output Example:**
-```js
-{
-  start: "2025-10-01T00:00:00.000Z",
-  end: "2025-10-15T23:59:59.999Z"
-}
+---
+
+## 🧩 Features ที่ต้องทำ
+
+### 1) Dashboard Layout (Drag & Resize)
+Widgets ขั้นต่ำ 4 ตัว:
+1) Main Chart  
+2) Trades (realtime table)  
+3) Watchlist  
+4) Status / Controls (timeframe + WS status)
+
+**Requirements**
+- Drag & Drop + Resize
+- Drop preview + snap (8px หรือ 16px)
+- Collision handling: เลือกอย่างใดอย่างหนึ่ง  
+  - Swap (สลับตำแหน่ง)  
+  - Push (ดัน widget อื่น)
+- Persist layout ด้วย localStorage
+- Refresh หน้า → layout ต้องกลับมาเหมือนเดิม 100%
+
+---
+
+### 2) TradingView Lightweight Chart
+- Candlestick (OHLC)
+- Crosshair + Tooltip (เวลา + O/H/L/C)
+- Zoom / Pan
+- Realtime update แบบ incremental:
+  - อยู่แท่งเดิม → update แท่งล่าสุด
+  - ข้ามแท่ง → append แท่งใหม่
+
+---
+
+### 3) Trades Table (Realtime)
+- ใช้ WebSocket `btcusdt@trade`
+- แสดง 50 รายการล่าสุด (prepend)
+- Columns: Time, Price, Qty, Side
+- Expand row เพื่อดูรายละเอียดเพิ่ม
+- ต้องไม่ทำให้ Drag & Drop หน่วง
+
+---
+
+### 4) QA Mode (ตรวจจากหน้าเว็บอย่างเดียว)
+ต้องมีแผง **QA Mode / Status Panel** (เปิด–ปิดได้) แสดงข้อมูลต่อไปนี้:
+
+- REST status + เวลาโหลดล่าสุด
+- WebSocket status  
+  (`connecting / connected / reconnecting / disconnected`)
+- Current WebSocket streams  
+  (เช่น `btcusdt@kline_15m`, `btcusdt@trade`)
+- Current timeframe
+- Counters:
+  - kline updates received
+  - trades received
+- Layout autosave status + last saved time
+- Drag smoothness indicator  
+  (Good / OK / Poor หรือ fps คร่าวๆ)
+
+**ปุ่มทดสอบบน UI**
+- Simulate WS Disconnect
+- Reconnect WS
+- Reset Layout
+- Clear Timeframe Favorites
+
+---
+
+## 🧪 Acceptance Checklist (ตรวจ 3–5 นาที)
+- [ ] เปลี่ยน timeframe แล้ว REST + WS เปลี่ยนจริง
+- [ ] Candlestick realtime update แบบไม่ refetch ทั้งชุด
+- [ ] Trades table ไหล + expand แล้วไม่เด้ง
+- [ ] Drag / Resize ลื่น แม้มี realtime data
+- [ ] Refresh หน้าแล้ว layout กลับมาเหมือนเดิม
+- [ ] QA Mode แสดงสถานะครบถ้วน
+
+---
+
+## 📦 Deliverables
+- Git repository หรือ zip
+- README นี้ พร้อมคำอธิบายสั้นๆ:
+  - โครงสร้างโปรเจกต์
+  - กลยุทธ์ Drag & Drop (collision + snap)
+  - Mapping Binance kline → candle
+  - WebSocket reconnect strategy
+
+---
+
+## 🧮 Scoring
+- Layout (Drag / Resize / Snap / Persist + Smooth): 50%
+- Chart (TradingView lightweight + realtime): 30%
+- Trades Table (realtime + stability): 10%
+- Code quality / structure / UX: 10%
